@@ -6,7 +6,7 @@ Português (README.md)
 
 ## Visão Geral
 
-O NutriAnalytics é uma aplicação desenvolvida em Streamlit para suporte à análise e visualização de dados relacionados à nutrição funcional e cronobiologia. A plataforma integra estratégias nutricionais baseadas no ritmo circadiano com ferramentas para exploração avançada de dados e visualizações que auxiliam no entendimento dos efeitos nutricionais ao longo do dia.
+Aplicação desenvolvida em Streamlit para suporte à análise e visualização de dados relacionados à nutrição funcional e cronobiologia. A plataforma integra estratégias nutricionais baseadas no ritmo circadiano com ferramentas para exploração avançada de dados e visualizações que auxiliam no entendimento dos efeitos nutricionais ao longo do dia.
 
 ## Funcionalidades Principais
 
@@ -45,7 +45,7 @@ English (README.md)
 
 ## Overview
 
-NutriAnalytics is a Streamlit-based application designed to support the analysis and visualization of data related to functional nutrition and chronobiology. The platform integrates nutritional strategies based on the circadian rhythm with advanced data exploration tools and visualizations to help understand nutritional effects throughout the day.
+Streamlit-based application designed to support the analysis and visualization of data related to functional nutrition and chronobiology. The platform integrates nutritional strategies based on the circadian rhythm with advanced data exploration tools and visualizations to help understand nutritional effects throughout the day.
 
 ## Key Features
 
