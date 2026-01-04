@@ -1,6 +1,7 @@
 import streamlit as st
 import plotly.express as px
 from st_aggrid import AgGrid, GridOptionsBuilder, DataReturnMode
+from pathlib import Path
 
 try:
     from filters import (
@@ -19,6 +20,12 @@ except ImportError:
         get_cronobiological_sorter,
         get_unique_values
     )
+
+# =========================
+# CAMINHO ABSOLUTO DA IMAGEM (GARANTIDO)
+# =========================
+BASE_DIR = Path(__file__).resolve().parents[1]
+IMG_PATH = BASE_DIR / "assets" / "Gabriel.jpeg"
 
 st.set_page_config(
     page_title=" Painel de Inteligência Nutricional",
@@ -136,21 +143,23 @@ if df_filtered.empty:
         "Nenhum item encontrado com os filtros atuais. "
         "Ajuste os critérios na barra lateral."
     )
+
+# =========================
+# HEADER COM FOTO (CORRIGIDO)
+# =========================
 st.title("Manual Avançado de Nutrição e Otimização Cognitiva")
 
-st.markdown(
-    """
-    <div style="display:flex; align-items:center; gap:16px; margin-top:10px; margin-bottom:30px;">
-        <img src="Gabriel.jpeg"
-             style="
-                width:88px;
-                height:88px;
-                border-radius:50%;
-                object-fit:cover;
-                flex-shrink:0;
-             "
-        />
-        <div>
+col_img, col_txt = st.columns([1, 5])
+
+col_img, col_txt = st.columns([1, 8], gap="small")
+
+with col_img:
+    st.image(str(IMG_PATH), width=120)
+
+with col_txt:
+    st.markdown(
+        """
+        <div style="line-height:1.3; margin-top:6px;">
             <strong>Gabriel Guerra</strong><br>
             Analytics Engineer | Data & Analytics<br>
             <span style="color:#64748B;">Data Analytics, BI & Applied Intelligence</span><br>
@@ -160,10 +169,10 @@ st.markdown(
                 <a href="mailto:gb.guerra@icloud.com">Email</a>
             </span>
         </div>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+        """,
+        unsafe_allow_html=True
+    )
+
 
 k1, k2, k3, k4 = st.columns(4)
 
@@ -208,6 +217,7 @@ with tab1:
             st.markdown(row["Tipo_Obtencao"])
 
         st.divider()
+
 with tab2:
     st.subheader("Explorador de Dados")
 
