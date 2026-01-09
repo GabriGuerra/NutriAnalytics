@@ -1,292 +1,133 @@
 import streamlit as st
 import plotly.express as px
-from st_aggrid import AgGrid, GridOptionsBuilder, DataReturnMode
-from pathlib import Path
+from filters import load_data
 
-try:
-    from filters import (
-        load_data,
-        apply_filters,
-        get_cronobiological_sorter,
-        get_unique_values
-    )
-except ImportError:
-    import sys
-    import os
-    sys.path.append(os.path.abspath(os.path.dirname(__file__)))
-    from filters import (
-        load_data,
-        apply_filters,
-        get_cronobiological_sorter,
-        get_unique_values
-    )
+# Configuração de alta performance e interface ampla
+st.set_page_config(page_title="Bio-Intelligence Command", layout="wide", initial_sidebar_state="expanded")
 
-# =========================
-# CAMINHO ABSOLUTO DA IMAGEM (GARANTIDO)
-# =========================
-BASE_DIR = Path(__file__).resolve().parents[1]
-IMG_PATH = BASE_DIR / "assets" / "Gabriel.jpeg"
 
-st.set_page_config(
-    page_title=" Painel de Inteligência Nutricional",
-    page_icon=None,
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
-
-st.markdown(
-    """
+st.markdown("""
     <style>
-        .block-container {
-            padding-top: 1.5rem;
-            padding-bottom: 1rem;
-        }
-        h1 {
-            font-family: Arial, Helvetica, sans-serif;
-            font-weight: 700;
-            color: #1E293B;
-        }
-        h2, h3 {
-            font-family: Arial, Helvetica, sans-serif;
-            font-weight: 600;
-            color: #334155;
-        }
-        .stMetric {
-            background-color: #F8FAFC;
-            padding: 14px;
-            border-radius: 6px;
-            border: 1px solid #E2E8F0;
-        }
-        .stTabs [data-baseweb="tab-list"] {
-            gap: 8px;
-        }
-        .stTabs [data-baseweb="tab"] {
-            height: 46px;
-            background-color: #F1F5F9;
-            border-radius: 4px 4px 0 0;
-            padding-top: 8px;
-            padding-bottom: 8px;
-            font-weight: 500;
-        }
-        .stTabs [aria-selected="true"] {
-            background-color: #FFFFFF;
-            border-top: 2px solid #2563EB;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        html, body, [class*="css"] { font-family: 'Inter', sans-serif; background-color: #F8FAFC; color: #1E293B; }
+
+        /* Sidebar Professional Dark */
+        [data-testid="stSidebar"] { background-color: #0F172A; border-right: 1px solid #1E293B; }
+        .profile-box { padding: 1.5rem 0; border-bottom: 1px solid #1E293B; margin-bottom: 2rem; }
+        .profile-name { color: #F8FAFC; font-weight: 700; font-size: 1.1rem; letter-spacing: -0.02em; }
+        .profile-role { color: #38BDF8; font-weight: 500; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        .profile-desc { color: #64748B; font-size: 0.8rem; margin-top: 4px; }
+
+        /* Layout de Colunas e Cabeçalhos */
+        .section-title { font-size: 0.75rem; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 20px; border-left: 3px solid #38BDF8; padding-left: 10px; }
+
+        /* Ajuste de Dataframe */
+        [data-testid="stDataFrame"] { border: 1px solid #E2E8F0; border-radius: 8px; }
     </style>
-    """,
-    unsafe_allow_html=True
-)
+""", unsafe_allow_html=True)
 
 df = load_data()
 
-if df.empty:
-    st.error(
-        "A base de dados não foi carregada corretamente. "
-        "Verifique o arquivo CSV na pasta /data."
-    )
-    st.stop()
-
+# --- SIDEBAR: IDENTIDADE E FILTROS DINÂMICOS ---
 with st.sidebar:
-    st.title("Protocolo")
-    st.caption("Nutrição & Saúde Cognitiva")
-    st.markdown("---")
-
-    objetivos = get_unique_values(df, "Objetivo_Primario")
-    periodos = get_unique_values(df, "Cronobiologia_Periodo")
-    momentos_refeicao = get_unique_values(df, "Momento_Refeicao")
-    categorias = get_unique_values(df, "Categoria")
-
-    selected_objetivos = st.multiselect(
-        "Objetivo Primário",
-        options=objetivos,
-        placeholder="Selecione um ou mais objetivos"
-    )
-
-    selected_periodos = st.multiselect(
-        "Período do Dia",
-        options=periodos,
-        placeholder="Manhã, Tarde ou Noite"
-    )
-
-    selected_moments = st.multiselect(
-        "Momento da Refeição",
-        options=momentos_refeicao,
-        placeholder="Antes, Durante, Depois ou Independente"
-    )
-
-    selected_categorias = st.multiselect(
-        "Categoria",
-        options=categorias,
-        placeholder="Alimento, Suplemento, Nootrópico"
-    )
-
-    st.markdown("---")
-    st.markdown(
-        """
-        **Notas de uso**
-        - Período do dia refere-se ao ritmo circadiano
-        - Momento da refeição é independente do período
-        - Um item pode aparecer em mais de um período
-        """
-    )
-
-df_filtered = apply_filters(
-    df=df,
-    selected_goals=selected_objetivos,
-    selected_periods=selected_periodos,
-    selected_moments=selected_moments,
-    selected_cats=selected_categorias
-)
-
-if df_filtered.empty:
-    st.warning(
-        "Nenhum item encontrado com os filtros atuais. "
-        "Ajuste os critérios na barra lateral."
-    )
-
-# =========================
-# HEADER COM FOTO (CORRIGIDO)
-# =========================
-st.title("Manual Avançado de Nutrição e Otimização Cognitiva")
-
-col_img, col_txt = st.columns([1, 5])
-
-col_img, col_txt = st.columns([1, 8], gap="small")
-
-with col_img:
-    st.image(str(IMG_PATH), width=120)
-
-with col_txt:
-    st.markdown(
-        """
-        <div style="line-height:1.3; margin-top:6px;">
-            <strong>Gabriel Guerra</strong><br>
-            Analytics Engineer | Data & Analytics<br>
-            <span style="color:#64748B;">Data Analytics, BI & Applied Intelligence</span><br>
-            <span style="color:#2563EB;">
-                
-            
+    st.markdown(f"""
+        <div class="profile-box">
+            <div class="profile-name">Plataforma Nutricional Inteligente </div>
+            <div class="profile-role">Nutrição & Saúde</div>
+            <div class="profile-desc">Data Analytics, BI & Applied Intelligence</div>
         </div>
-        """,
-        unsafe_allow_html=True
+    """, unsafe_allow_html=True)
+
+    st.subheader("Filtros Globais")
+    # Filtros que afetam tanto o gráfico quanto a tabela
+    opts_pilar = ["Todos"] + sorted(df['Sistema_Biologico'].unique().tolist())
+    sel_pilar = st.multiselect("Filtrar Sistemas:", options=opts_pilar, default="Todos")
+
+    opts_hor = ["Todos"] + sorted(df['Cronobiologia_Periodo'].unique().tolist())
+    sel_hor = st.multiselect("Filtrar Períodos:", options=opts_hor, default="Todos")
+
+    st.markdown("---")
+    st.subheader("Configuração da Visualização")
+    # TODAS as possibilidades solicitadas para o utilizador escolher no Sunburst
+    eixo_sunburst = st.selectbox(
+        "Agrupar Gráfico por:",
+        options=[
+            "Sistema_Biologico",
+            "Mecanismo_Acao",
+            "Uso_Pratico",
+            "Cronobiologia_Periodo",
+            "Fonte_Alimentar"
+        ],
+        format_func=lambda x: x.replace("_", " ").title()
     )
 
+# --- ENGINE DE DADOS (REATIVO) ---
+df_view = df.copy()
 
-k1, k2, k3, k4 = st.columns(4)
+# Aplicação dos filtros da Sidebar
+if "Todos" not in sel_pilar and sel_pilar:
+    df_view = df_view[df_view['Sistema_Biologico'].isin(sel_pilar)]
+if "Todos" not in sel_hor and sel_hor:
+    df_view = df_view[df_view['Cronobiologia_Periodo'].isin(sel_hor)]
 
-k1.metric("Itens Ativos", len(df_filtered))
-k2.metric("Categorias", df_filtered["Categoria"].nunique())
-k3.metric("Subcategorias", df_filtered["Subcategoria"].nunique())
-k4.metric("Objetivos", df_filtered["Objetivo_Primario"].nunique())
+# Ordenação cronológica para a tabela (Manhã -> Noite)
+df_display = df_view.sort_values('Ordem_Cronos')
 
-tab1, tab2, tab3 = st.tabs(
-    [
-        "Protocolo Cronobiológico",
-        "Base de Dados",
-        "Visão Analítica"
-    ]
-)
+# --- INTERFACE PRINCIPAL ---
+st.markdown("<h2 style='font-weight:700; color:#0F172A; margin-bottom:0;'>Sistema de Dados Nutricionais</h2>",
+            unsafe_allow_html=True)
+st.markdown("<p style='color:#64748B; margin-bottom:2.5rem;'>Arquitetura de Dados Bioativos & Gestão de Estratégia</p>",
+            unsafe_allow_html=True)
 
-with tab1:
-    st.subheader("Planejamento Cronobiológico Diário")
+# Layout Lado a Lado: Gráfico (Esquerda) e Tabela (Direita)
+col_left, col_right = st.columns([5, 7])
 
-    df_chrono = get_cronobiological_sorter(df_filtered)
+with col_left:
+    st.markdown(f"<div class='section-title'>Mapa de Hierarquia: {eixo_sunburst.replace('_', ' ')}</div>",
+                unsafe_allow_html=True)
 
-    current_period = None
+    # Sunburst com paleta profissional e interativa
+    fig_sun = px.sunburst(
+        df_view,
+        path=[eixo_sunburst, 'Nome_Item'],
+        values='Peso_Visual',
+        color=eixo_sunburst,
+        color_discrete_sequence=px.colors.qualitative.Safe,
+        hover_data=[eixo_sunburst]
+    )
+    fig_sun.update_layout(
+        height=620,
+        margin=dict(t=0, l=0, r=0, b=0),
+        paper_bgcolor='rgba(0,0,0,0)',
+    )
+    st.plotly_chart(fig_sun, use_container_width=True)
 
-    for _, row in df_chrono.iterrows():
-        period = row["Cronobiologia_Periodo"]
+with col_right:
+    st.markdown("<div class='section-title'>Dossiê de Ativos (Organização Cronológica)</div>", unsafe_allow_html=True)
 
-        if period != current_period:
-            st.markdown(f"### {period}")
-            current_period = period
-
-        c1, c2, c3 = st.columns([2, 4, 2])
-
-        with c1:
-            st.markdown(f"**{row['Nome_Item']}**")
-            st.caption(row["Categoria"])
-
-        with c2:
-            st.markdown(row["Uso_Pratico"])
-            st.caption(f"Fonte alimentar: {row['Fonte_Alimentar']}")
-
-        with c3:
-            st.markdown(row["Tipo_Obtencao"])
-
-        st.divider()
-
-with tab2:
-    st.subheader("Explorador de Dados")
-
-    gb = GridOptionsBuilder.from_dataframe(df_filtered)
-    gb.configure_pagination(paginationPageSize=15)
-    gb.configure_side_bar()
-    gb.configure_default_column(
-        filter=True,
-        sortable=True,
-        resizable=True
+    # Configuração da Tabela Completa com todas as informações do CSV
+    st.dataframe(
+        df_display.drop(columns=['Peso_Visual', 'Ordem_Cronos'], errors='ignore'),
+        use_container_width=True,
+        height=620,
+        hide_index=True,
+        column_config={
+            "Nome_Item": st.column_config.TextColumn("Ativo", width="medium"),
+            "Sistema_Biologico": st.column_config.TextColumn("Sistema"),
+            "Mecanismo_Acao": st.column_config.TextColumn("Mecanismo de Ação", width="large"),
+            "Uso_Pratico": st.column_config.TextColumn("Uso Prático", width="medium"),
+            "Cronobiologia_Periodo": st.column_config.TextColumn("Período"),
+            "Fonte_Alimentar": st.column_config.TextColumn("Fonte"),
+            "Momento_Refeicao": st.column_config.TextColumn("Refeição"),
+            "Objetivo_Primario": st.column_config.TextColumn("Objetivo")
+        }
     )
 
-    gb.configure_column(
-        "Nome_Item",
-        header_name="Item",
-        pinned="left",
-        minWidth=200
-    )
-
-    gb.configure_column(
-        "Objetivo_Primario",
-        header_name="Objetivo",
-        minWidth=200
-    )
-
-    gb.configure_column(
-        "Cronobiologia_Periodo",
-        header_name="Período"
-    )
-
-    gb.configure_column(
-        "Momento_Refeicao",
-        header_name="Refeição"
-    )
-
-    AgGrid(
-        df_filtered,
-        gridOptions=gb.build(),
-        data_return_mode=DataReturnMode.FILTERED_AND_SORTED,
-        height=600,
-        fit_columns_on_grid_load=False
-    )
-
-with tab3:
-    st.subheader("Distribuição Estratégica")
-
-    c1, c2 = st.columns(2)
-
-    with c1:
-        fig_obj = px.bar(
-            df_filtered["Objetivo_Primario"].value_counts().reset_index(name="count"),
-            x="count",
-            y="Objetivo_Primario",
-            orientation="h",
-            labels={"count": "Quantidade", "Objetivo_Primario": "Objetivo"}
-        )
-        st.plotly_chart(fig_obj, width="stretch")
-
-    with c2:
-        fig_cat = px.pie(
-            df_filtered,
-            names="Categoria",
-            hole=0.45
-        )
-        st.plotly_chart(fig_cat, width="stretch")
-
-    st.divider()
-
-    fig_hier = px.sunburst(
-        df_filtered,
-        path=["Categoria", "Subcategoria", "Nome_Item"],
-        color="Objetivo_Primario"
-    )
-    st.plotly_chart(fig_hier, width="stretch")
+# --- RODAPÉ CORPORATIVO ---
+st.markdown("<br><hr>", unsafe_allow_html=True)
+st.markdown(f"""
+    <div style='display: flex; justify-content: space-between; color: #94A3B8; font-size: 0.75rem; padding-bottom: 20px;'>
+        <span>Protocolo Bio-Intelligence Matrix v17.0</span>
+        <span>Analytics Engineer: Gabriel Guerra</span>
+    </div>
+""", unsafe_allow_html=True)
