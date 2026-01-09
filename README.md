@@ -21,3 +21,7 @@ git clone https://github.com/GabriGuerra/nutri-analytics.git
 cd nutri-analytics
 pip install -r requirements.txt
 streamlit run src/app.py
+```
+Author Gabriel Guerra
+
+License MIT
